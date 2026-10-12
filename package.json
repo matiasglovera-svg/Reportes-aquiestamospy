@@ -1,0 +1,23 @@
+{
+  "name": "reportes-aquiestamospy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "hash-password": "node scripts/hash-password.mjs",
+    "gen-secrets": "node scripts/gen-secrets.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "salud": "tsx scripts/salud.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  }
+}

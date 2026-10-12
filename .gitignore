@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+coverage/
+test-results/
+playwright-report/
+.vercel/
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+next-env.d.ts
+
+# Datos reales: nunca al repo
+fixtures/*
+!fixtures/.gitkeep
+*.xlsx
+
+# Originales de marca (las copias en uso están en public/brand/)
+/*.png
