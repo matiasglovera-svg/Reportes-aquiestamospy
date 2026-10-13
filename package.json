@@ -12,7 +12,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "preparar-vercel": "node scripts/preparar-vercel.mjs"
   },
   "dependencies": {
     "@azure/msal-node": "^7.0.1",
