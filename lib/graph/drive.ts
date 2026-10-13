@@ -37,13 +37,58 @@ export async function descargar(itemId: string): Promise<Uint8Array> {
   return new Uint8Array(await r.arrayBuffer());
 }
 
+const CAMPOS = '$select=id,name,size,lastModifiedDateTime,parentReference,file';
+const esPlanilla = (i: ItemDrive) => /\.xls[xm]$/i.test(i.name ?? '');
+const palabras = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toUpperCase()
+    .split(/[^A-Z0-9]+/)
+    .filter(Boolean);
+
+async function listar(ruta: string, token: string): Promise<ItemDrive[]> {
+  try {
+    const r = await graph(ruta, token);
+    return ((await r.json()) as { value?: ItemDrive[] }).value ?? [];
+  } catch (e) {
+    if (e instanceof ReconectarError) throw e;
+    return [];
+  }
+}
+
+/**
+ * Busca planillas por nombre. El buscador de OneDrive no siempre encuentra nombres con guiones bajos o
+ * números ("03_07_26"), así que se prueba con el texto completo, con las palabras sueltas y, si nada
+ * aparece, con los archivos recientes y la carpeta raíz. Primero van los que contienen todas las palabras.
+ */
 export async function buscar(texto: string): Promise<ItemDrive[]> {
   const token = await tokenDeAcceso();
-  const q = texto.replace(/'/g, "''");
-  const r = await graph(
-    `/me/drive/root/search(q='${encodeURIComponent(q)}')?$select=id,name,size,lastModifiedDateTime,parentReference,file&$top=25`,
-    token,
-  );
-  const { value } = (await r.json()) as { value: ItemDrive[] };
-  return value.filter((i) => i.file && /\.xls[xm]$/i.test(i.name));
+  const pedidas = palabras(texto);
+  const letras = pedidas.filter((p) => /[A-Z]/.test(p));
+  const consultas = [...new Set([texto.trim(), pedidas.join(' '), letras.join(' '), letras[0] ?? '', '.xlsx'].filter((c) => c.length >= 3))];
+
+  const hallados = new Map<string, ItemDrive>();
+  const sumar = (items: ItemDrive[]) => items.filter(esPlanilla).forEach((i) => hallados.has(i.id) || hallados.set(i.id, i));
+  const coincidencias = (i: ItemDrive) => {
+    const nombre = palabras(i.name).join(' ');
+    return pedidas.filter((p) => nombre.includes(p)).length;
+  };
+  const hayExacto = () => [...hallados.values()].some((i) => coincidencias(i) === pedidas.length);
+
+  for (const c of consultas) {
+    sumar(await listar(`/me/drive/root/search(q='${encodeURIComponent(c.replace(/'/g, "''"))}')?${CAMPOS}&$top=50`, token));
+    if (hayExacto()) break;
+  }
+  if (!hayExacto()) {
+    sumar(await listar(`/me/drive/recent?${CAMPOS}&$top=50`, token));
+    sumar(await listar(`/me/drive/root/children?${CAMPOS}&$top=200`, token));
+  }
+
+  return [...hallados.values()]
+    .map((i) => ({ i, n: coincidencias(i) }))
+    .filter((x) => x.n > 0 || !pedidas.length)
+    .sort((a, b) => b.n - a.n || (b.i.lastModifiedDateTime ?? '').localeCompare(a.i.lastModifiedDateTime ?? ''))
+    .slice(0, 25)
+    .map((x) => x.i);
 }
