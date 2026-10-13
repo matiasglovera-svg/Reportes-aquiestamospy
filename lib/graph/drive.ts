@@ -11,6 +11,7 @@ export interface ItemDrive {
   size?: number;
   parentReference?: { path?: string };
   file?: { mimeType?: string };
+  folder?: { childCount?: number };
 }
 
 async function graph(ruta: string, token: string): Promise<Response> {
@@ -37,7 +38,7 @@ export async function descargar(itemId: string): Promise<Uint8Array> {
   return new Uint8Array(await r.arrayBuffer());
 }
 
-const CAMPOS = '$select=id,name,size,lastModifiedDateTime,parentReference,file';
+const CAMPOS = '$select=id,name,size,lastModifiedDateTime,parentReference,file,folder';
 const esPlanilla = (i: ItemDrive) => /\.xls[xm]$/i.test(i.name ?? '');
 const palabras = (s: string) =>
   s
@@ -58,9 +59,35 @@ async function listar(ruta: string, token: string): Promise<ItemDrive[]> {
 }
 
 /**
+ * Recorre las carpetas del OneDrive (hasta 5 niveles y 400 carpetas) juntando las planillas de Excel.
+ * Es el respaldo para cuando el buscador de Microsoft no tiene indexado el archivo.
+ */
+async function recorrer(token: string, hasta: (hallados: ItemDrive[]) => boolean): Promise<ItemDrive[]> {
+  const planillas: ItemDrive[] = [];
+  let nivel = [`/me/drive/root/children?${CAMPOS}&$top=200`];
+  let visitadas = 0;
+  for (let profundidad = 0; profundidad < 5 && nivel.length && visitadas < 400; profundidad++) {
+    const tanda = nivel.slice(0, 400 - visitadas);
+    visitadas += tanda.length;
+    const siguiente: string[] = [];
+    // De a 8 carpetas a la vez para no saturar a Graph.
+    for (let i = 0; i < tanda.length; i += 8) {
+      const listas = await Promise.all(tanda.slice(i, i + 8).map((ruta) => listar(ruta, token)));
+      for (const item of listas.flat()) {
+        if (item.folder) siguiente.push(`/me/drive/items/${encodeURIComponent(item.id)}/children?${CAMPOS}&$top=200`);
+        else if (esPlanilla(item)) planillas.push(item);
+      }
+      if (hasta(planillas)) return planillas;
+    }
+    nivel = siguiente;
+  }
+  return planillas;
+}
+
+/**
  * Busca planillas por nombre. El buscador de OneDrive no siempre encuentra nombres con guiones bajos o
  * números ("03_07_26"), así que se prueba con el texto completo, con las palabras sueltas y, si nada
- * aparece, con los archivos recientes y la carpeta raíz. Primero van los que contienen todas las palabras.
+ * aparece, con los archivos recientes y recorriendo las carpetas. Primero van los que contienen todas las palabras.
  */
 export async function buscar(texto: string): Promise<ItemDrive[]> {
   const token = await tokenDeAcceso();
@@ -82,7 +109,9 @@ export async function buscar(texto: string): Promise<ItemDrive[]> {
   }
   if (!hayExacto()) {
     sumar(await listar(`/me/drive/recent?${CAMPOS}&$top=50`, token));
-    sumar(await listar(`/me/drive/root/children?${CAMPOS}&$top=200`, token));
+  }
+  if (!hayExacto()) {
+    sumar(await recorrer(token, (vistas) => vistas.some((i) => coincidencias(i) === pedidas.length)));
   }
 
   return [...hallados.values()]

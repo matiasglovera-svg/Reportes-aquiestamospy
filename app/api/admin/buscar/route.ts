@@ -5,6 +5,7 @@ import { sesionCon } from '@/lib/session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /** Busca planillas por nombre en el OneDrive conectado. */
 export async function GET(req: Request) {
