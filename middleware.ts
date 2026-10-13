@@ -10,6 +10,17 @@ const empiezaCon = (ruta: string, prefijos: string[]) => prefijos.some((p) => ru
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const esApi = pathname.startsWith('/api/');
+
+  // Sin SESSION_SECRET no se puede validar ninguna sesión: se avisa qué falta en vez de fallar con un 500 genérico.
+  if ((process.env.SESSION_SECRET ?? '').length < 32) {
+    return new NextResponse(
+      'Reportes Aquí Estamos: falta configurar el servidor.\n\n' +
+        'La variable SESSION_SECRET no está cargada (o tiene menos de 32 caracteres).\n' +
+        'En Vercel: Settings → Environment Variables → cargar las variables → Deployments → Redeploy.',
+      { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } },
+    );
+  }
+
   const res = NextResponse.next();
   const sesion = await getIronSession<Sesion>(req, res, sessionOptions());
 
