@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ── Marca Aquí Estamos ─────────────────────────────────────────── */
+:root {
+  --navy: #0a3143;
+  --turquesa: #37c4d8;
+  --amarillo: #ffd83b;
+  --royal: #3751d9;
+  --durazno: #fcc898;
+  --crema: #fbfbf3;
+
+  --bg: var(--crema);
+  --surface: #ffffff;
+  --surface-2: #f3f4ea;
+  --text: var(--navy);
+  --muted: #4a6573;
+  --border: #e3e5d8;
+  --primary: var(--royal);
+  --primary-fg: #ffffff;
+  --primary-soft: #e9ecfc;
+  --accent: #0e8799;
+  --accent-soft: #dff6f9;
+  --alerta: #c9343a;
+  --alerta-soft: #fdecec;
+  --ok: #17755b;
+  --shadow: 0 1px 2px rgb(10 49 67 / 0.05), 0 8px 24px -12px rgb(10 49 67 / 0.14);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #071f2b;
+  --surface: #0f3a4f;
+  --surface-2: #14465d;
+  --text: #f3f6f8;
+  --muted: #a9c1cd;
+  --border: #1f5269;
+  --primary: var(--turquesa);
+  --primary-fg: #06222e;
+  --primary-soft: #134b5e;
+  --accent: var(--turquesa);
+  --accent-soft: #134b5e;
+  --alerta: #ff8a8e;
+  --alerta-soft: #4a2a35;
+  --ok: #6fdcb9;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 10px 28px -14px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-alerta: var(--alerta);
+  --color-alerta-soft: var(--alerta-soft);
+  --color-ok: var(--ok);
+  --color-navy: var(--navy);
+  --color-turquesa: var(--turquesa);
+  --color-amarillo: var(--amarillo);
+  --color-royal: var(--royal);
+  --color-durazno: var(--durazno);
+  --color-crema: var(--crema);
+  --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow-sc), var(--font-barlow), ui-sans-serif, sans-serif;
+  --radius-card: 18px;
+  --shadow-card: var(--shadow);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* El cambio de tema se anima; el resto de las transiciones las define cada componente. */
+html.tema-en-transicion,
+html.tema-en-transicion * {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.25s ease !important;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@keyframes pulso {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes brillo {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: color-mix(in srgb, var(--amarillo) 38%, transparent);
+  }
+}
+
+.resaltar {
+  animation: brillo 1.6s ease;
+  border-radius: 8px;
+}
+
+@keyframes esqueleto {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.esqueleto {
+  background: linear-gradient(90deg, var(--surface-2) 25%, color-mix(in srgb, var(--surface-2) 55%, var(--surface)) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: esqueleto 1.4s linear infinite;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

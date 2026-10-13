@@ -22,3 +22,42 @@ Supuestos y criterios tomados sin consultar (sección 16.2). Si alguno no va, se
 
 14. **SheetJS 0.20.3 desde el CDN oficial** (la versión de npm está desactualizada y con vulnerabilidades conocidas).
 15. **Fechas de Excel** convertidas por aritmética del número de serie, sin depender de la zona horaria del servidor.
+
+## Resumen y Análisis
+
+16. **Pendientes (por cobrar / por pagar):** se calculan sobre los servicios realizados del mes elegido, no de todo el año.
+17. **Proyección por semana:** un bloque se muestra como "estimado" (línea punteada) si todavía tiene servicios agendados o no tiene ninguno cargado.
+18. **Margen por tipo de precio:** entra solo lo realizado y con precio. En modo A, si el sueldo fijo del mes todavía no está cargado, los servicios de esa operaria quedan fuera (no se inventa un costo) y se informa cuántos.
+19. **Días hábiles:** lunes a sábado; "transcurridos" incluye el día de hoy. No se descuentan feriados.
+20. **Sueldos fijos para proyección y punto de equilibrio:** los del último mes cerrado que los tenga cargados en el panel.
+21. **Punto de equilibrio:** ticket promedio = promedio de los tickets mensuales de meses cerrados; pago promedio = Σ K ÷ servicios realizados de operarias por servicio en meses cerrados.
+22. **Comparación al día X:** en ambos meses se cuentan solo servicios con fecha hasta el día X. La proyección al cierre se muestra solo para el mes en curso.
+23. **Ranking de operarias por margen:** una operaria de sueldo fijo sin total cargado en algún mes del período no figura (su margen sería "Sin dato").
+24. **Horas por operaria en el mes en curso:** no se muestra variación contra el mes anterior, porque compararía un mes incompleto con uno completo.
+
+## Diseño
+
+25. **Colores de gráficos:** los colores de marca exactos se usan en la interfaz y en el mapa de calor. Para las series de los gráficos se usan pasos de esos mismos tonos (royal, turquesa, amarillo, durazno, azul), ajustados con un validador para que se distingan entre sí también con daltonismo, sobre fondo claro y oscuro. Están en config/theme.ts.
+26. **Un solo eje por gráfico.** "Servicios por mes" muestra realizados y unidades ponderadas en el mismo eje (son magnitudes comparables).
+27. **Gastos por categoría:** el gráfico apila RR. HH. y las tres categorías de mayor peso del año; el resto se agrupa en "Resto". El CSV trae todas las categorías.
+28. **Mapa de calor en HTML** (no ECharts): permite primera columna fija y detalle al tocar en el teléfono.
+29. **Componentes estilo shadcn/ui escritos a mano** sobre Radix (popover y menú), sin usar su instalador.
+30. **Selector de período:** un selector de mes en la barra superior, más conmutadores "mes / acumulado" en los rankings. No hay selector de rango libre de fechas.
+31. **Nota fija sobre marzo eliminada** (sección 16.1). Cualquier monto en la columna de comentarios de GASTOS se informa en Salud de datos, para el mes que sea.
+
+## Seguridad y servidor
+
+32. **Token de Microsoft:** se guarda cifrada (AES-256-GCM) la caché completa de MSAL, que contiene el refresh token, y se vuelve a guardar cada vez que MSAL la modifica (rotación).
+33. **Callback de OAuth:** es pública para el middleware, pero solo se acepta con sesión de administrador y con el mismo "state" generado al iniciar.
+34. **Peticiones que modifican estado:** exigen que el encabezado Origin coincida con el host de la app.
+35. **CSP:** permite scripts y estilos en línea del propio sitio (los inyecta Next); el resto solo desde el mismo origen.
+36. **Dataset en Redis:** comprimido con gzip y partido en trozos de 800 KB si hiciera falta (en vez de claves por mes).
+37. **El cliente no vuelve a descargar el dataset si no cambió:** envía la versión que tiene y el servidor responde "sin cambios".
+38. **Avisos de Salud de datos:** solo se envían al administrador. Al viewer el error de OneDrive le llega sin detalle técnico.
+39. **Next.js 15** (cumple "14+"), porque Next 16 reemplaza middleware.ts por otro mecanismo.
+40. **Modo local** (DATA_SOURCE=local, lee fixtures/): solo para desarrollo y QA; en producción se ignora.
+
+## No implementado
+
+41. **Adaptador de CONSOLIDADO VENTAS_:** era opcional y desactivado; no se implementó.
+42. **Comparación contra el conteo de servicios del panel** (el "±1 servicio" de la sección 12): no se ubicó con certeza esa celda en el panel; queda pendiente.

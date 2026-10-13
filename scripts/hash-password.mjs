@@ -40,5 +40,9 @@ if (password.length < 10) {
   console.error('Usá al menos 10 caracteres.');
   process.exit(1);
 }
-console.log('\nHash (pegar en el campo "hash" de APP_USERS):\n');
-console.log(bcrypt.hashSync(password, 12));
+const hash = bcrypt.hashSync(password, 12);
+console.log('\nPara Vercel (campo "hash" de APP_USERS, tal cual):\n');
+console.log(hash);
+// En .env.local Next interpreta cada $ como una variable: hay que escaparlos.
+console.log('\nPara .env.local (con cada $ escapado):\n');
+console.log(hash.replaceAll('$', '\\$'));
