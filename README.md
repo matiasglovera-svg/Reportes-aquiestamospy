@@ -37,7 +37,7 @@ Los gastos y sus comentarios salen siempre del detalle de la pestaña GASTOS (co
 
 ## Vistas previas
 
-Cada rama distinta de  que se sube a GitHub genera una URL de vista previa en Vercel. La vista previa lee el mismo OneDrive y la misma planilla que producción, pero usa su propia caché y no permite cambiar la conexión ni los archivos. Las variables de entorno tienen que estar habilitadas también para el entorno **Preview**.
+Cada rama distinta de `main` que se sube a GitHub genera una URL de vista previa en Vercel. La vista previa lee el mismo OneDrive y la misma planilla que producción, pero usa su propia caché y no permite cambiar la conexión ni los archivos. Las variables de entorno tienen que estar habilitadas también para el entorno **Preview**.
 
 ## Reconectar OneDrive
 
