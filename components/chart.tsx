@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, GaugeChart, LineChart } from 'echarts/charts';
+import { BarChart, CustomChart, GaugeChart, LineChart } from 'echarts/charts';
 import { AriaComponent, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { GRAFICO, SERIES, type Tema } from '@/config/theme';
 import { useDatos } from './datos';
 
-echarts.use([BarChart, LineChart, GaugeChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, AriaComponent, CanvasRenderer]);
+echarts.use([BarChart, CustomChart, LineChart, GaugeChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, AriaComponent, CanvasRenderer]);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Opcion = Record<string, any>;

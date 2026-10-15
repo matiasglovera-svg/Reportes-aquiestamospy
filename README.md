@@ -24,6 +24,21 @@ Reglas principales:
 - Un dato que falta se muestra como `Sin dato`, nunca como 0.
 - Cada indicador tiene un ícono ⓘ con la fórmula, la fuente y la hora de la última lectura.
 
+## Flujo de caja detallado
+
+**Financiero › Flujo de caja detallado** (en el teléfono, con las pestañas arriba de Financiero). Muestra, para el acumulado de meses cerrados o para un mes:
+
+- Caja inicial, ingresos, gastos, ganancia bruta y real (con sus márgenes) y caja al cierre, comparados con el período anterior.
+- Una cascada de la caja inicial a la caja al cierre, gasto por gasto.
+- "¿Dónde se fue la plata?": cada categoría de gasto con sus líneas reales y el comentario de la planilla.
+- La matriz mes a mes, como la pestaña FLUJO CAJA, con un control de que caja inicial + ganancia real = caja al cierre.
+
+Los gastos y sus comentarios salen siempre del detalle de la pestaña GASTOS (columna VALOR).
+
+## Vistas previas
+
+Cada rama distinta de  que se sube a GitHub genera una URL de vista previa en Vercel. La vista previa lee el mismo OneDrive y la misma planilla que producción, pero usa su propia caché y no permite cambiar la conexión ni los archivos. Las variables de entorno tienen que estar habilitadas también para el entorno **Preview**.
+
 ## Reconectar OneDrive
 
 Si aparece el aviso amarillo "Reconectar OneDrive" (los reportes siguen mostrando los últimos datos guardados):

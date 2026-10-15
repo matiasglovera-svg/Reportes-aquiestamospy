@@ -11,6 +11,7 @@ interface Estado {
   msConfigurado: boolean;
   redisConfigurado: boolean;
   fuenteLocal: boolean;
+  soloLectura: boolean;
   redirectUri: string;
   cuenta: { usuario: string; nombre: string | null; conectadaEl: string } | null;
   archivos: { anio: number; nombre: string; lastModified: string | null; lastChecked: string | null; error: string | null; reconectar: boolean }[];
@@ -29,6 +30,7 @@ const ERRORES: Record<string, string> = {
   state: 'La autorización no coincide con la que se inició. Probá de nuevo desde "Conectar OneDrive".',
   cancelado: 'Cancelaste la autorización en Microsoft.',
   microsoft: 'Microsoft devolvió un error al autorizar.',
+  preview: 'En la vista previa no se puede conectar OneDrive: se usa la conexión de producción.',
   token: 'No se pudo completar la conexión. Revisá el secreto de cliente (puede estar vencido) y la URI de redirección.',
 };
 
@@ -103,6 +105,7 @@ export default function Conexion() {
           {mensaje.texto}
         </p>
       )}
+      {e.soloLectura && <p className="mb-4 rounded-xl bg-amarillo/25 px-4 py-3 text-sm">Vista previa: se leen el mismo OneDrive y la misma planilla que en producción, pero acá no se puede cambiar la conexión ni los archivos.</p>}
       {e.fuenteLocal && <p className="mb-4 rounded-xl bg-amarillo/25 px-4 py-3 text-sm">Modo desarrollo: los reportes se leen de la copia local en fixtures/, no de OneDrive.</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -123,11 +126,11 @@ export default function Conexion() {
           </ul>
           <div className="flex flex-wrap gap-2">
             {/* Navegación completa: el flujo OAuth redirige a Microsoft. */}
-            <a href="/api/microsoft/login" aria-disabled={!e.msConfigurado} className={`inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-fg ${e.msConfigurado ? 'hover:opacity-90' : 'pointer-events-none opacity-50'}`}>
+            <a href="/api/microsoft/login" aria-disabled={!e.msConfigurado || e.soloLectura} className={`inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-fg ${e.msConfigurado && !e.soloLectura ? 'hover:opacity-90' : 'pointer-events-none opacity-50'}`}>
               {e.cuenta ? 'Reconectar OneDrive' : 'Conectar OneDrive'}
             </a>
             {e.cuenta && (
-              <Boton variante="peligro" disabled={ocupado !== null} onClick={() => window.confirm('¿Desconectar OneDrive? Los reportes van a seguir mostrando los últimos datos guardados.') && accion('desconectar', () => fetch('/api/admin/desconectar', { method: 'POST' }), 'OneDrive desconectado.')}>
+              <Boton variante="peligro" disabled={ocupado !== null || e.soloLectura} onClick={() => window.confirm('¿Desconectar OneDrive? Los reportes van a seguir mostrando los últimos datos guardados.') && accion('desconectar', () => fetch('/api/admin/desconectar', { method: 'POST' }), 'OneDrive desconectado.')}>
                 <Unplug className="h-4 w-4" /> Desconectar
               </Boton>
             )}
@@ -154,10 +157,10 @@ export default function Conexion() {
                     <dd className={a.error ? 'text-alerta' : ''}>{a.error ?? 'Ninguno'}</dd>
                   </dl>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <Boton variante="suave" className="h-8 px-3 text-xs" disabled={ocupado !== null} onClick={() => accion(`leer-${a.anio}`, () => fetch(`/api/admin/refrescar?anio=${a.anio}`, { method: 'POST' }), `Planilla ${a.anio} leída de nuevo.`)}>
+                    <Boton variante="suave" className="h-8 px-3 text-xs" disabled={ocupado !== null || e.soloLectura} onClick={() => accion(`leer-${a.anio}`, () => fetch(`/api/admin/refrescar?anio=${a.anio}`, { method: 'POST' }), `Planilla ${a.anio} leída de nuevo.`)}>
                       <RefreshCw className={`h-3.5 w-3.5 ${ocupado === `leer-${a.anio}` ? 'animate-spin' : ''}`} /> Leer ahora
                     </Boton>
-                    <Boton variante="fantasma" className="h-8 px-3 text-xs" disabled={ocupado !== null} onClick={() => window.confirm(`¿Quitar el archivo de ${a.anio}?`) && accion(`quitar-${a.anio}`, () => fetch(`/api/admin/archivos?anio=${a.anio}`, { method: 'DELETE' }), `Archivo de ${a.anio} quitado.`)}>
+                    <Boton variante="fantasma" className="h-8 px-3 text-xs" disabled={ocupado !== null || e.soloLectura} onClick={() => window.confirm(`¿Quitar el archivo de ${a.anio}?`) && accion(`quitar-${a.anio}`, () => fetch(`/api/admin/archivos?anio=${a.anio}`, { method: 'DELETE' }), `Archivo de ${a.anio} quitado.`)}>
                       Quitar
                     </Boton>
                   </div>
@@ -180,7 +183,7 @@ export default function Conexion() {
             Año
             <input className={`${campo} num mt-1 w-24`} type="number" min={2020} max={2100} value={anio} onChange={(ev) => setAnio(Number(ev.target.value))} required />
           </label>
-          <Boton type="submit" disabled={!e.cuenta || ocupado !== null}>
+          <Boton type="submit" disabled={!e.cuenta || ocupado !== null || e.soloLectura}>
             <Search className="h-4 w-4" /> {ocupado === 'buscar' ? 'Buscando…' : 'Buscar en OneDrive'}
           </Boton>
         </form>
@@ -201,7 +204,7 @@ export default function Conexion() {
                 <Boton
                   variante="suave"
                   className="h-9"
-                  disabled={ocupado !== null}
+                  disabled={ocupado !== null || e.soloLectura}
                   onClick={() => accion(`usar-${r.itemId}`, () => fetch('/api/admin/archivos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ anio, itemId: r.itemId, nombre: r.nombre }) }), `Planilla asignada a ${anio} y leída correctamente.`)}
                 >
                   {ocupado === `usar-${r.itemId}` ? 'Leyendo…' : `Usar para ${anio}`}

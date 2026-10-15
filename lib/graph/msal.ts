@@ -1,6 +1,6 @@
 import { ConfidentialClientApplication, type ICachePlugin } from '@azure/msal-node';
 import { cifrar, descifrar } from '../crypto';
-import { env, msConfigurado } from '../env';
+import { env, msConfigurado, prefijoCache } from '../env';
 import { store } from '../store';
 
 const AUTHORITY = 'https://login.microsoftonline.com/consumers';
@@ -29,11 +29,12 @@ export class ReconectarError extends Error {
  */
 const cachePlugin: ICachePlugin = {
   beforeCacheAccess: async (ctx) => {
-    const guardada = await store().get<string>(CLAVE_CACHE);
+    // La vista previa arranca desde la caché de producción pero guarda la suya: nunca escribe la de producción.
+    const guardada = (prefijoCache() ? await store().get<string>(prefijoCache() + CLAVE_CACHE) : null) ?? (await store().get<string>(CLAVE_CACHE));
     if (guardada) ctx.tokenCache.deserialize(descifrar(guardada));
   },
   afterCacheAccess: async (ctx) => {
-    if (ctx.cacheHasChanged) await store().set(CLAVE_CACHE, cifrar(ctx.tokenCache.serialize()));
+    if (ctx.cacheHasChanged) await store().set(prefijoCache() + CLAVE_CACHE, cifrar(ctx.tokenCache.serialize()));
   },
 };
 

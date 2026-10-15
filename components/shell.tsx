@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Activity, BarChart3, CheckCircle2, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LineChart, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
+import { Activity, ArrowLeftRight, BarChart3, CheckCircle2, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LineChart, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/resumen', texto: 'Resumen', icono: LayoutDashboard },
   { href: '/resumen/analisis', texto: 'Análisis', icono: LineChart, hijo: true },
   { href: '/financiero', texto: 'Financiero', icono: Wallet },
+  { href: '/financiero/flujo', texto: 'Flujo de caja', icono: ArrowLeftRight, hijo: true },
   { href: '/operativo', texto: 'Operativo', icono: Activity },
 ];
 const NAV_ADMIN = [
@@ -91,6 +92,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const items = d.esAdmin ? [...NAV, ...NAV_ADMIN] : NAV;
   const activo = (href: string) => ruta === href;
   const esAdminRuta = ruta.startsWith('/admin');
+  // El flujo de caja tiene su propio selector de período.
+  const sinSelectorMes = esAdminRuta || ruta === '/financiero/flujo';
+  // En la barra inferior del teléfono el flujo de caja se abre desde Financiero (pestañas en la página).
+  const itemsMovil = items.filter((n) => n.href !== '/financiero/flujo');
+  const activoMovil = (href: string) => activo(href) || (href === '/financiero' && ruta.startsWith('/financiero'));
 
   const salir = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -154,7 +160,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   ))}
                 </Selector>
               )}
-              {d.dataset && !esAdminRuta && (
+              {d.dataset && !sinSelectorMes && (
                 <Selector etiqueta="Mes" value={d.mes ?? ''} onChange={(e) => d.setMes(Number(e.target.value))}>
                   {d.dataset.operativo.map((m) => (
                     <option key={m.mes} value={m.mes}>
@@ -188,8 +194,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       {/* Barra inferior (móvil) */}
       <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-        {items.map((n) => (
-          <Link key={n.href} href={n.href} aria-current={activo(n.href) ? 'page' : undefined} className={cn('relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium', activo(n.href) ? 'text-primary' : 'text-muted')}>
+        {itemsMovil.map((n) => (
+          <Link key={n.href} href={n.href} aria-current={activoMovil(n.href) ? 'page' : undefined} className={cn('relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium', activoMovil(n.href) ? 'text-primary' : 'text-muted')}>
             <n.icono className="h-5 w-5" />
             <span className="max-w-full truncate px-0.5">{n.texto === 'Salud de datos' ? 'Salud' : n.texto}</span>
             {n.href === '/admin/datos' && avisos > 0 && <span className="absolute right-[22%] top-1 h-2 w-2 rounded-full bg-amarillo" />}

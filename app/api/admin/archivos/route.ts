@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { obtenerDatos } from '@/lib/cache';
 import { guardarArchivo, quitarArchivo } from '@/lib/files';
+import { env } from '@/lib/env';
 import { mismoOrigen, sesionCon } from '@/lib/session';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 async function autorizado(req: Request): Promise<NextResponse | null> {
+  if (env.esPreview()) return NextResponse.json({ error: 'En la vista previa no se puede cambiar la configuración. Hacelo desde producción.' }, { status: 403 });
   if (!mismoOrigen(req)) return NextResponse.json({ error: 'Origen no permitido.' }, { status: 403 });
   if (!(await sesionCon('admin'))) return NextResponse.json({ error: 'Solo el administrador.' }, { status: 403 });
   return null;

@@ -69,6 +69,20 @@ export function controlesCruzados(
     }
   }
 
+  // Coherencia de caja: Caja inicial + Ganancia real = Caja al cierre (FLUJO CAJA).
+  for (const m of fin.meses) {
+    if (m.cajaInicial === null || m.cajaCierre === null || m.ganancia === null) continue;
+    const esperado = m.cajaInicial + m.ganancia;
+    if (Math.abs(esperado - m.cajaCierre) < 1) continue;
+    avisos.push({
+      tipo: 'caja-control',
+      nivel: 'aviso',
+      pestana: 'FLUJO CAJA',
+      mes: m.mes,
+      mensaje: `${nombreMes(m.mes)}: caja inicial ${gs(m.cajaInicial)} + ganancia real ${gs(m.ganancia)} = ${gs(esperado)}, pero CAJA AL CIERRE dice ${gs(m.cajaCierre)} (diferencia ${gs(m.cajaCierre - esperado)}).`,
+    });
+  }
+
   // Control RR. HH.: Σ K de operarias por servicio + sueldos fijos del panel ≈ RECURSOS HUMANOS de GASTOS.
   for (const mc of meses) {
     const m = fin.meses[mc.mes - 1];
