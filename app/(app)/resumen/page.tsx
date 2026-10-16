@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { barra, base, Grafico, linea, usePaleta } from '@/components/chart';
 import { useDatos } from '@/components/datos';
 import { Kpi } from '@/components/kpi';
+import { SeccionAnalisis } from '@/components/seccion-analisis';
 import { Etiqueta, Panel, TituloSeccion } from '@/components/ui';
 import { calcularResumen } from '@/lib/engine/metrics-resumen';
 import { gs, gsCorto, mesLargo, num, pct } from '@/lib/format';
@@ -132,6 +133,8 @@ export default function Resumen() {
           info={{ formula: 'Σ TOTAL (K) de servicios realizados con STATUS PROFESIONALES (G) sin tilde.', fuente: `${pestana} (columnas G y K)`, nota: 'No incluye los sueldos fijos.' }}
         />
       </div>
+
+      <SeccionAnalisis />
     </>
   );
 }

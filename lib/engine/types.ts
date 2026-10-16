@@ -222,7 +222,8 @@ export type AvisoTipo =
   | 'nombre-unificado'
   | 'nombre-nuevo'
   | 'sin-clasificar'
-  | 'estructura';
+  | 'estructura'
+  | 'caja-control';
 
 export interface Aviso {
   tipo: AvisoTipo;
@@ -231,6 +232,19 @@ export interface Aviso {
   mes?: number;
   fila?: number;
   mensaje: string;
+}
+
+/** Una línea con valor de las tablas de detalle de INGRESOS o GASTOS. */
+export interface LineaDetalle {
+  mes: number;
+  /** Celda de la columna VALOR, ej. "Q27". */
+  celda: string;
+  concepto: string;
+  /** Concepto normalizado (categoría de gasto o concepto de ingreso). */
+  categoria: string;
+  valor: number;
+  /** Texto de la columna OBS / COMENTARIO / FECHA / MES; null si está vacía. */
+  obs: string | null;
 }
 
 export interface Dataset {
@@ -246,4 +260,6 @@ export interface Dataset {
   flujo: FlujoCaja;
   salud: Aviso[];
   pestanas: { detectadas: string[]; ignoradas: string[] };
+  /** Líneas con valor del detalle de INGRESOS y GASTOS (para ver en qué y por qué). */
+  detalle: { ingresos: LineaDetalle[]; gastos: LineaDetalle[] };
 }

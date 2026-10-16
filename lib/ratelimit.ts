@@ -1,4 +1,5 @@
 import { Ratelimit } from '@upstash/ratelimit';
+import { prefijoCache } from './env';
 import { redis } from './store';
 
 const INTENTOS = 5;
@@ -10,7 +11,7 @@ let upstash: Ratelimit | null | undefined;
 function limitador(): Ratelimit | null {
   if (upstash === undefined) {
     const r = redis();
-    upstash = r ? new Ratelimit({ redis: r, limiter: Ratelimit.fixedWindow(INTENTOS, '15 m'), prefix: 'rl:login' }) : null;
+    upstash = r ? new Ratelimit({ redis: r, limiter: Ratelimit.fixedWindow(INTENTOS, '15 m'), prefix: `${prefijoCache()}rl:login` }) : null;
   }
   return upstash;
 }

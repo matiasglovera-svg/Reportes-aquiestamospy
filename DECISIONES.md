@@ -61,3 +61,35 @@ Supuestos y criterios tomados sin consultar (sección 16.2). Si alguno no va, se
 
 41. **Adaptador de CONSOLIDADO VENTAS_:** era opcional y desactivado; no se implementó.
 42. **Comparación contra el conteo de servicios del panel** (el "±1 servicio" de la sección 12): no se ubicó con certeza esa celda en el panel; queda pendiente.
+
+## Flujo de caja detallado (sección 17)
+
+43. **Dónde vive:** subvista de Financiero (`/financiero/flujo`), con pestañas "Resumen financiero / Flujo de caja detallado" arriba de ambas páginas. En la barra lateral figura como subítem; en la barra inferior del teléfono se llega desde Financiero, para no sumar un séptimo botón.
+44. **Período:** selector propio (acumulado de meses cerrados por defecto, o un mes). En esta vista se oculta el selector de mes de la barra superior para no tener dos controles distintos.
+45. **Período anterior:** para un mes, el mes previo. Para el acumulado (ej. Enero a Septiembre), el acumulado hasta el penúltimo mes cerrado (Enero a Agosto). En el acumulado no se muestra la variación de la caja inicial (siempre es la de enero) ni la frase "el gasto que más creció" (la diferencia de dos sumas acumuladas es solo el último mes).
+46. **Caja del acumulado:** caja inicial del primer mes y caja al cierre del último mes del período.
+47. **Cascada:** los subtotales (Ganancia bruta, Ganancia real) se dibujan desde el nivel de la caja inicial, así su altura es exactamente la ganancia. Caja inicial y Caja al cierre se dibujan desde 0. Se usan los colores de marca pedidos (turquesa, royal, amarillo para el mayor gasto, navy o crema para subtotales), no la paleta de series.
+48. **Mes en curso:** se marca "En vivo · parcial"; no se muestran variaciones contra el mes anterior (compararían un mes incompleto con uno completo).
+49. **Matriz:** total y promedio solo con meses cerrados. Filas de caja: total = caja del primer (inicial) o último (cierre) mes cerrado; sin promedio. Márgenes: total = sobre las sumas; promedio = promedio simple de los márgenes mensuales (igual que la rentabilidad promedio del módulo Financiero).
+50. **Ingresos por concepto en la matriz:** salen del detalle de INGRESOS (hoy un solo concepto: servicio de limpieza profesional).
+51. **Coherencia de caja:** caja inicial + ganancia real contra CAJA AL CIERRE, por mes, con ✓ / ⚠ en la matriz y aviso nuevo en Salud de datos ("Coherencia de caja").
+52. **Lectura automática:** cinco reglas fijas (peso de RR. HH., mayor gasto después de RR. HH., gasto que más creció, margen neto, variación de la caja). Una frase sin datos suficientes no se muestra.
+
+## Vista previa (Preview de Vercel)
+
+53. **Caché separada:** en la vista previa (`VERCEL_ENV=preview`) el dataset, el lock de refresco, el límite de intentos de login y la caché del token de Microsoft se guardan con prefijo `preview:`.
+54. **Token de Microsoft:** la vista previa arranca desde el token de producción (solo lectura) y guarda su renovación en su propia clave; nunca reescribe el de producción.
+55. **Solo lectura:** en la vista previa no se puede conectar ni desconectar OneDrive ni asignar o quitar archivos (botones deshabilitados y rutas que responden 403). Usuarios y alias vienen de variables de entorno y del código, así que tampoco se pueden cambiar desde ahí.
+
+## Rediseño del flujo de caja (pedido de Matías, 16/10/2026)
+
+56. **Jerarquía:** arriba, una "ecuación de caja" (Caja inicial + Ingresos − Gastos = Caja al cierre) con la caja al cierre destacada; debajo, Ganancia bruta y Ganancia real con el margen como número grande y barra. La lectura automática resalta los números en negrita.
+57. **Cascada:** los gastos menores al 2 % del gasto total se agrupan en un paso "Otros gastos (n)", al final; el tooltip lista qué agrupa. La lista completa sigue en "¿Dónde se fue la plata?" y en la matriz.
+58. **Distribución:** columnas alineadas (monto, % del gasto, % de ingresos) y fila de total al pie.
+59. **Matriz:** sin sombreado por celda; totales y ganancias con fondo propio, márgenes como dato secundario, secciones con encabezado de color, mayor gasto del mes con un punto amarillo. La columna Total va al final y queda fija a la derecha en pantallas medianas y grandes (en el teléfono se desplaza con el resto).
+60. **Menú CSV:** un panel con varias descargas usa un solo menú `⋯`.
+
+## Navegación final (pedido de Matías, 16/10/2026)
+
+61. **Análisis dentro de Resumen:** todo el contenido de Análisis va al final de Resumen, bajo el título "Análisis". Ya no es un módulo aparte; el link viejo `/resumen/analisis` redirige a `/resumen#analisis`.
+62. **Financiero desplegable:** en el menú lateral, Financiero es un grupo que se abre y se cierra con un clic, con "Resumen financiero" y "Flujo de caja". Se abre solo cuando estás en una pantalla de Financiero. En el teléfono, la barra inferior queda con Resumen, Financiero y Operativo (más Admin), y el flujo de caja se abre con las pestañas de Financiero.

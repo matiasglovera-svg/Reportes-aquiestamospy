@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Activity, BarChart3, CheckCircle2, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LineChart, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
+import { Activity, ArrowLeftRight, BarChart3, CheckCircle2, ChevronDown, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -14,9 +14,13 @@ import { Boton, cn, Esqueleto, Selector, Vacio } from './ui';
 
 const NAV = [
   { href: '/resumen', texto: 'Resumen', icono: LayoutDashboard },
-  { href: '/resumen/analisis', texto: 'Análisis', icono: LineChart, hijo: true },
   { href: '/financiero', texto: 'Financiero', icono: Wallet },
   { href: '/operativo', texto: 'Operativo', icono: Activity },
+];
+/** Submenú desplegable de Financiero. */
+const SUB_FINANCIERO = [
+  { href: '/financiero', texto: 'Resumen financiero', icono: Wallet },
+  { href: '/financiero/flujo', texto: 'Flujo de caja', icono: ArrowLeftRight },
 ];
 const NAV_ADMIN = [
   { href: '/admin/conexion', texto: 'Conexión', icono: PlugZap },
@@ -91,6 +95,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const items = d.esAdmin ? [...NAV, ...NAV_ADMIN] : NAV;
   const activo = (href: string) => ruta === href;
   const esAdminRuta = ruta.startsWith('/admin');
+  // El flujo de caja tiene su propio selector de período.
+  const sinSelectorMes = esAdminRuta || ruta === '/financiero/flujo';
+  // En la barra inferior del teléfono el flujo de caja se abre desde Financiero (pestañas en la página).
+  const itemsMovil = items;
+  const enFinanciero = ruta.startsWith('/financiero');
+  const [financieroAbierto, setFinancieroAbierto] = useState(enFinanciero);
+  useEffect(() => {
+    if (enFinanciero) setFinancieroAbierto(true);
+  }, [enFinanciero]);
+  const activoMovil = (href: string) => activo(href) || (href === '/financiero' && ruta.startsWith('/financiero'));
 
   const salir = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -118,9 +132,35 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
-          {NAV.map((n) => (
-            <Enlace key={n.href} {...n} activo={activo(n.href)} plegado={plegado} />
-          ))}
+          {NAV.map((n) =>
+            n.href === '/financiero' && !plegado ? (
+              <div key={n.href}>
+                <button
+                  onClick={() => setFinancieroAbierto((v) => !v)}
+                  aria-expanded={financieroAbierto}
+                  aria-controls="submenu-financiero"
+                  className={cn('flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors', enFinanciero ? 'font-semibold text-text' : 'text-muted hover:bg-surface-2 hover:text-text')}
+                >
+                  <n.icono className={cn('h-[18px] w-[18px] shrink-0', enFinanciero && 'text-primary')} />
+                  <span className="flex-1 truncate text-left">{n.texto}</span>
+                  <ChevronDown className={cn('h-4 w-4 shrink-0 transition-transform duration-200', financieroAbierto && 'rotate-180')} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {financieroAbierto && (
+                    <motion.div id="submenu-financiero" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                      <div className="mt-1 flex flex-col gap-1">
+                        {SUB_FINANCIERO.map((s) => (
+                          <Enlace key={s.href} {...s} hijo activo={activo(s.href)} plegado={false} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Enlace key={n.href} {...n} activo={n.href === '/financiero' ? enFinanciero : activo(n.href)} plegado={plegado} />
+            ),
+          )}
           {d.esAdmin && (
             <>
               {!plegado ? <p className="mt-4 px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Admin</p> : <hr className="my-3 border-border" />}
@@ -154,7 +194,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   ))}
                 </Selector>
               )}
-              {d.dataset && !esAdminRuta && (
+              {d.dataset && !sinSelectorMes && (
                 <Selector etiqueta="Mes" value={d.mes ?? ''} onChange={(e) => d.setMes(Number(e.target.value))}>
                   {d.dataset.operativo.map((m) => (
                     <option key={m.mes} value={m.mes}>
@@ -188,8 +228,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       {/* Barra inferior (móvil) */}
       <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-        {items.map((n) => (
-          <Link key={n.href} href={n.href} aria-current={activo(n.href) ? 'page' : undefined} className={cn('relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium', activo(n.href) ? 'text-primary' : 'text-muted')}>
+        {itemsMovil.map((n) => (
+          <Link key={n.href} href={n.href} aria-current={activoMovil(n.href) ? 'page' : undefined} className={cn('relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium', activoMovil(n.href) ? 'text-primary' : 'text-muted')}>
             <n.icono className="h-5 w-5" />
             <span className="max-w-full truncate px-0.5">{n.texto === 'Salud de datos' ? 'Salud' : n.texto}</span>
             {n.href === '/admin/datos' && avisos > 0 && <span className="absolute right-[22%] top-1 h-2 w-2 rounded-full bg-amarillo" />}

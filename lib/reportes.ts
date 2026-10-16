@@ -14,6 +14,7 @@ import {
   type FilaComparacion,
   type ModoMargen,
 } from './engine/metrics-analisis';
+import { matrizFlujo, resumenFlujo, type ResumenFlujo } from './engine/metrics-flujo';
 import { calcularResumen } from './engine/metrics-resumen';
 import type { Dataset, OpMes, TipoCliente } from './engine/types';
 import { mesCorto, mesLargo } from './format';
@@ -465,6 +466,11 @@ export interface Filtros {
   conAgendados: boolean;
 }
 
+function flujoAcumulado(d: Dataset): Reporte[] {
+  const r = resumenFlujo(d, { tipo: 'acumulado' });
+  return r ? [rDistribucionGastos(r), rLineasGastos(r)] : [];
+}
+
 export function todosLosReportes(d: Dataset, f: Filtros): Reporte[] {
   const lista: (Reporte | null)[] = [
     rResumen(d, f.mes),
@@ -496,7 +502,75 @@ export function todosLosReportes(d: Dataset, f: Filtros): Reporte[] {
     rRankingOperarias(d, f.mes),
     rRankingOperarias(d, null),
     rPuntoEquilibrio(d),
+    rMatrizFlujo(d),
+    ...flujoAcumulado(d),
   ];
   // Dos reportes pueden compartir título con distinto período; el nombre de archivo ya los separa.
   return lista.filter((r): r is Reporte => r !== null);
+}
+
+// ───────────────────────── Flujo de caja detallado ─────────────────────────
+
+/** Nombre de categoría para mostrar: "RECURSOS HUMANOS" → "Recursos humanos"; SET e IVA quedan en mayúsculas. */
+export function nombreCategoria(c: string): string {
+  if (c === 'RECURSOS HUMANOS') return 'Recursos humanos';
+  if (c === 'SET' || c === 'IVA') return c;
+  return c.charAt(0) + c.slice(1).toLowerCase();
+}
+
+const textoPeriodo = (r: ResumenFlujo) => r.etiqueta.replace(/ a /, '-a-');
+
+export function rMatrizFlujo(d: Dataset): Reporte {
+  const mz = matrizFlujo(d);
+  return {
+    id: 'flujo-matriz',
+    titulo: 'Flujo de caja detallado',
+    periodo: pAnio(d),
+    columnas: [
+      { titulo: 'Concepto', tipo: 'texto' },
+      ...mz.columnas.map((c) => ({ titulo: mesLargo(c.mes) + (c.parcial ? ' (parcial)' : ''), tipo: 'gs' as const })),
+      { titulo: 'Total meses cerrados', tipo: 'gs' },
+      { titulo: 'Promedio meses cerrados', tipo: 'gs' },
+    ],
+    // Los márgenes van como porcentaje (20,7) y el control de caja como Sí / No.
+    filas: mz.filas.map((f) => {
+      const v = (x: number | null): Valor => (x === null ? null : f.tipo === 'pct' ? Math.round(x * 10000) / 100 : f.tipo === 'check' ? (x ? 'Sí' : 'No') : x);
+      const tituloFila = f.grupo === 'ingreso' && !f.destacada ? `Ingreso: ${f.titulo}` : f.grupo === 'gasto' && f.categoria ? `Gasto: ${nombreCategoria(f.titulo)}` : f.titulo;
+      return [tituloFila, ...f.valores.map(v), v(f.total), v(f.promedio)];
+    }),
+  };
+}
+
+export function rDistribucionGastos(r: ResumenFlujo): Reporte {
+  return {
+    id: 'flujo-distribucion',
+    titulo: 'Distribucion de gastos',
+    periodo: textoPeriodo(r),
+    columnas: [
+      { titulo: 'Categoría', tipo: 'texto' },
+      { titulo: 'Monto', tipo: 'gs' },
+      { titulo: '% del gasto total', tipo: 'pct' },
+      { titulo: '% de los ingresos', tipo: 'pct' },
+      { titulo: 'Líneas', tipo: 'num' },
+    ],
+    filas: r.categorias.map((c) => [nombreCategoria(c.categoria), c.valor, r.gastos ? c.valor / r.gastos : null, r.ingresos ? c.valor / r.ingresos : null, c.lineas.length]),
+  };
+}
+
+export function rLineasGastos(r: ResumenFlujo, categoria?: string): Reporte {
+  const cats = categoria ? r.categorias.filter((c) => c.categoria === categoria) : r.categorias;
+  return {
+    id: `flujo-lineas${categoria ? `-${categoria}` : ''}`,
+    titulo: categoria ? `Gastos ${nombreCategoria(categoria)}` : 'Lineas de gastos',
+    periodo: textoPeriodo(r),
+    columnas: [
+      { titulo: 'Mes', tipo: 'texto' },
+      { titulo: 'Categoría', tipo: 'texto' },
+      { titulo: 'Concepto', tipo: 'texto' },
+      { titulo: 'Valor', tipo: 'gs' },
+      { titulo: 'Detalle (OBS / comentario / fecha)', tipo: 'texto' },
+      { titulo: 'Celda en GASTOS', tipo: 'texto' },
+    ],
+    filas: cats.flatMap((c) => c.lineas.map((l) => [mesLargo(l.mes), nombreCategoria(c.categoria), l.concepto, l.valor, l.obs ?? 'Sin detalle cargado', l.celda])),
+  };
 }

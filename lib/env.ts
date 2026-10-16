@@ -14,7 +14,15 @@ export const env = {
   /** Solo desarrollo: leer la planilla de fixtures/ en vez de OneDrive. Se ignora en producción. */
   fuenteLocal: () => process.env.NODE_ENV !== 'production' && process.env.DATA_SOURCE === 'local',
   build: () => process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev',
+  /** Despliegue de vista previa de Vercel (una rama distinta de main). */
+  esPreview: () => process.env.VERCEL_ENV === 'preview',
 };
+
+/**
+ * La vista previa lee el mismo OneDrive y la misma configuración que producción, pero guarda su caché
+ * con este prefijo para no pisar la de producción, y no puede cambiar la configuración.
+ */
+export const prefijoCache = () => (env.esPreview() ? 'preview:' : '');
 
 export const msConfigurado = () => !!(env.msClientId() && env.msClientSecret() && env.msRedirectUri() && env.tokenKey());
 export const redisConfigurado = () => !!(env.redisUrl() && env.redisToken());

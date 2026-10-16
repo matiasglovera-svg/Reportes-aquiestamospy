@@ -40,3 +40,10 @@ Estado al 13/10/2026. Todo lo que no depende de cuentas externas está hecho y p
 1. Matías: cuentas y credenciales (pedido único en el chat).
 2. Con las credenciales: probar OAuth y Graph de punta a punta, publicar, correr el QA contra producción.
 3. Revisar en la planilla real los avisos de Salud de datos (control de RR. HH. de septiembre, montos en comentarios de marzo).
+
+## Sección 17 — Flujo de caja detallado (en rama `feature/flujo-caja-detallado`)
+- Motor: líneas de detalle de INGRESOS y GASTOS con su comentario en el dataset; `lib/engine/metrics-flujo.ts` (períodos, comparación, cascada, matriz, lectura automática); control de coherencia de caja en Salud de datos.
+- Vista `/financiero/flujo`: 6 indicadores con variación, cascada (horizontal en el teléfono), lectura automática, "¿Dónde se fue la plata?" con las líneas reales, matriz estilo Excel con ✓/⚠, CSV de matriz, distribución y líneas (también en Exportar todo).
+- Vista previa aislada: caché con prefijo `preview:` y configuración en solo lectura.
+- Tests: 53 unitarios en verde; Playwright: 12 pruebas en verde (incluye la vista nueva en ambos temas, 390 y 1440 px). Hubo un fallo intermitente en la primera carga del servidor de desarrollo que no se repitió.
+- **Pendiente:** OK de Matías sobre la vista previa → merge a main → verificación en producción → borrar la rama.

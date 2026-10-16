@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { construirDataset, leerLibro, type Dataset } from './engine';
-import { env } from './env';
+import { env, prefijoCache } from './env';
 import { hoyEn } from './fecha';
 import { anioPorDefecto, archivos, type ArchivoAnio } from './files';
 import { descargar, metadatos } from './graph/drive';
@@ -48,8 +48,8 @@ interface Estado {
 }
 
 const memoria = new Map<number, { clave: string; dataset: Dataset }>();
-const claveEstado = (anio: number) => `datos:${anio}:estado`;
-const claveTrozo = (anio: number, i: number) => `datos:${anio}:gz:${i}`;
+const claveEstado = (anio: number) => `${prefijoCache()}datos:${anio}:estado`;
+const claveTrozo = (anio: number, i: number) => `${prefijoCache()}datos:${anio}:gz:${i}`;
 const firma = (e: Pick<Estado, 'cTag' | 'hoy' | 'build'>) => `${e.cTag}|${e.hoy}|${e.build}`;
 
 async function guardarDataset(anio: number, dataset: Dataset): Promise<number> {
@@ -130,7 +130,7 @@ export async function obtenerDatos(anioPedido?: number, opciones: { forzar?: boo
 
   let estado = await store().get<Estado>(claveEstado(archivo.anio));
   // El lock evita que varias pestañas abiertas consulten OneDrive a la vez.
-  if (opciones.forzar || (await store().setNx(`datos:${archivo.anio}:lock`, 1, INTERVALO_CHEQUEO))) {
+  if (opciones.forzar || (await store().setNx(`${prefijoCache()}datos:${archivo.anio}:lock`, 1, INTERVALO_CHEQUEO))) {
     estado = await refrescar(archivo, hoy, estado);
   }
 

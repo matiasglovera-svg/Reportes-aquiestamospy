@@ -15,6 +15,7 @@ const GRUPOS: { tipos: AvisoTipo[]; titulo: string; ayuda: string }[] = [
   { tipos: ['ingresos-control'], titulo: 'Control de ingresos', ayuda: 'Detalle del mes contra el resumen izquierdo, FLUJO CAJA y la celda TOTAL del bloque.' },
   { tipos: ['gastos-control'], titulo: 'Control de gastos', ayuda: 'Detalle del mes contra el resumen izquierdo y FLUJO CAJA, y montos escritos fuera de la columna VALOR.' },
   { tipos: ['ganancia-control'], titulo: 'Control de ganancia y rentabilidad', ayuda: 'Cálculo propio contra GANANCIA REAL y CONVERSION de FLUJO CAJA.' },
+  { tipos: ['caja-control'], titulo: 'Coherencia de caja', ayuda: 'Caja inicial + Ganancia real contra CAJA AL CIERRE de FLUJO CAJA, por mes.' },
   { tipos: ['rrhh-control'], titulo: 'Control de RR. HH.', ayuda: 'Σ K de operarias por servicio + sueldos fijos del panel contra RECURSOS HUMANOS de GASTOS.' },
   { tipos: ['sin-fecha', 'sin-cliente'], titulo: 'Servicios sin fecha o sin cliente', ayuda: 'Sin fecha solo cuentan como realizados cuando el mes ya cerró.' },
   { tipos: ['sin-precio'], titulo: 'Servicios sin precio', ayuda: 'Cuentan en cantidades; el precio queda "Sin dato".' },

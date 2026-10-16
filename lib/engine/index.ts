@@ -10,7 +10,8 @@ import { parseGastos } from './parse-gastos';
 import { parseIngresos } from './parse-ingresos';
 import { parseMes } from './parse-month';
 import { esPestanaNecesaria } from './read-workbook';
-import type { Aviso, Dataset, Hoja, LibroCrudo, MesCrudo } from './types';
+import { categoriaGasto } from './parse-gastos';
+import type { Aviso, BloqueDetalle, Dataset, Hoja, LibroCrudo, LineaDetalle, MesCrudo } from './types';
 
 export interface Entrada {
   libro: LibroCrudo;
@@ -83,6 +84,16 @@ export function construirDataset(e: Entrada): Dataset {
   const operativo = calcularOperativo(meses, periodo, esSueldoFijo);
   avisos.push(...controlesCruzados(financiero, ingresos, gastos, flujo, meses, esSueldoFijo));
 
+  // Líneas del detalle con su comentario: la columna VALOR del rango es "Q6:Q21" → letra Q.
+  const lineas = (bloques: Map<number, BloqueDetalle>, categorizar: (c: string | null) => string): LineaDetalle[] =>
+    [...bloques.values()]
+      .sort((a, b) => a.mes - b.mes)
+      .flatMap((b) =>
+        b.filas
+          .filter((f) => f.valor !== null)
+          .map((f) => ({ mes: b.mes, celda: `${b.rango.replace(/[0-9].*$/, '')}${f.fila}`, concepto: f.concepto ?? 'Sin concepto', categoria: categorizar(f.concepto), valor: f.valor!, obs: f.obs })),
+      );
+
   return {
     version: 1,
     anio,
@@ -97,6 +108,7 @@ export function construirDataset(e: Entrada): Dataset {
       detectadas: Object.keys(libro.hojas),
       ignoradas: libro.nombres.filter((n) => !esPestanaNecesaria(n)),
     },
+    detalle: { ingresos: lineas(ingresos.detalle, (c) => normTexto(c) || 'SIN CONCEPTO'), gastos: lineas(gastos.detalle, categoriaGasto) },
   };
 }
 

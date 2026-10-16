@@ -19,6 +19,7 @@ export async function GET() {
       msConfigurado: msConfigurado(),
       redisConfigurado: redisConfigurado(),
       fuenteLocal: env.fuenteLocal(),
+      soloLectura: env.esPreview(),
       redirectUri: env.msRedirectUri(),
       cuenta: cuenta && { usuario: cuenta.usuario, nombre: cuenta.nombre, conectadaEl: cuenta.conectadaEl },
       archivos: estados.map((e) => ({

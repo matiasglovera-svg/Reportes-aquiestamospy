@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { barra, base, Grafico, linea, usePaleta } from '@/components/chart';
 import { useDatos } from '@/components/datos';
+import { PestanasFinanciero } from '@/components/financiero-tabs';
 import { Kpi } from '@/components/kpi';
 import { Tabla } from '@/components/tabla';
 import { Etiqueta, Panel, Segmentos, TituloSeccion } from '@/components/ui';
@@ -84,6 +85,7 @@ export default function Financiero() {
 
   return (
     <>
+      <PestanasFinanciero />
       <TituloSeccion nota={`Promedios y totales sobre ${nCerrados} meses cerrados (${rango})`}>Financiero</TituloSeccion>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

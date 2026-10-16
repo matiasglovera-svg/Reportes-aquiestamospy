@@ -155,7 +155,8 @@ export function Informacion({ info, titulo }: { info: InfoKpi; titulo: string })
 }
 
 /** Menú ⋯ → Descargar CSV con exactamente los datos mostrados. */
-export function MenuCsv({ reporte }: { reporte: Reporte }) {
+/** `otros`: descargas adicionales del mismo panel, en el mismo menú. */
+export function MenuCsv({ reporte, otros = [] }: { reporte: Reporte; otros?: Reporte[] }) {
   return (
     <Menu.Root>
       <Menu.Trigger aria-label={`Opciones de ${reporte.titulo}`} className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text">
@@ -164,8 +165,13 @@ export function MenuCsv({ reporte }: { reporte: Reporte }) {
       <Menu.Portal>
         <Menu.Content align="end" sideOffset={6} className="z-50 min-w-44 rounded-xl border border-border bg-surface p-1 text-sm shadow-card">
           <Menu.Item onSelect={() => descargarCsv(reporte)} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 outline-none data-[highlighted]:bg-surface-2">
-            <Download className="h-4 w-4" /> Descargar CSV
+            <Download className="h-4 w-4" /> Descargar CSV{otros.length ? `: ${reporte.titulo.toLowerCase()}` : ''}
           </Menu.Item>
+          {otros.map((o) => (
+            <Menu.Item key={o.id} onSelect={() => descargarCsv(o)} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 outline-none data-[highlighted]:bg-surface-2">
+              <Download className="h-4 w-4" /> Descargar CSV: {o.titulo.toLowerCase()}
+            </Menu.Item>
+          ))}
         </Menu.Content>
       </Menu.Portal>
     </Menu.Root>
@@ -178,6 +184,7 @@ export function Panel({
   subtitulo,
   info,
   reporte,
+  reportesExtra,
   acciones,
   children,
   className,
@@ -186,6 +193,8 @@ export function Panel({
   subtitulo?: React.ReactNode;
   info?: InfoKpi;
   reporte?: Reporte;
+  /** Otras descargas CSV del panel (van en el mismo menú). */
+  reportesExtra?: Reporte[];
   acciones?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -201,7 +210,7 @@ export function Panel({
         {acciones && <div className="order-last flex w-full max-w-full sm:order-none sm:w-auto">{acciones}</div>}
         <div className="flex items-center gap-1">
           {info && <Informacion info={info} titulo={titulo} />}
-          {reporte && <MenuCsv reporte={reporte} />}
+          {reporte && <MenuCsv reporte={reporte} otros={reportesExtra} />}
         </div>
       </div>
       <div className="min-w-0 flex-1">{children}</div>
