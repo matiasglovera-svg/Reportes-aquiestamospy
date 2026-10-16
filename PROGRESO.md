@@ -46,4 +46,5 @@ Estado al 13/10/2026. Todo lo que no depende de cuentas externas está hecho y p
 - Vista `/financiero/flujo`: 6 indicadores con variación, cascada (horizontal en el teléfono), lectura automática, "¿Dónde se fue la plata?" con las líneas reales, matriz estilo Excel con ✓/⚠, CSV de matriz, distribución y líneas (también en Exportar todo).
 - Vista previa aislada: caché con prefijo `preview:` y configuración en solo lectura.
 - Tests: 53 unitarios en verde; Playwright: 12 pruebas en verde (incluye la vista nueva en ambos temas, 390 y 1440 px). Hubo un fallo intermitente en la primera carga del servidor de desarrollo que no se repitió.
-- **Pendiente:** OK de Matías sobre la vista previa → merge a main → verificación en producción → borrar la rama.
+- OK de Matías el 16/10/2026, con dos ajustes: Análisis al final de Resumen y Financiero como submenú desplegable.
+- Merge a main y publicado en producción el 16/10/2026; rama borrada. Verificado en producción: login, protección de rutas y API. La revisión visual con datos la hace Matías.
