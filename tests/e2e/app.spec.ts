@@ -129,8 +129,9 @@ test('flujo de caja detallado: período, líneas de detalle, matriz y CSV', asyn
   for (const t of ['Caja inicial', 'Ingresos totales', 'Gastos totales', 'Ganancia bruta', 'Ganancia real', 'Caja al cierre']) {
     await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
   }
-  await expect(page.getByText('Margen bruto:')).toBeVisible();
-  await expect(page.getByText('Margen neto:')).toBeVisible();
+  await expect(page.getByText('Margen bruto', { exact: true })).toBeVisible();
+  await expect(page.getByText('Margen neto', { exact: true })).toBeVisible();
+  await expect(page.getByText('Cómo se movió la caja')).toBeVisible();
   await expect(page.getByRole('img', { name: /Cascada del flujo de caja/ })).toBeVisible();
   await expect(page.getByText(/^Recursos Humanos fue el .+ de los ingresos\.$/)).toBeVisible();
 

@@ -84,9 +84,16 @@ describe.skipIf(!fixture)('Flujo de caja detallado (lógica sobre la copia local
       // Orden: RR. HH. va antes de la ganancia bruta; el resto, de mayor a menor después.
       const iBruta = pasos.findIndex((x) => x.clave === 'ganancia-bruta');
       expect(pasos.slice(0, iBruta).filter((x) => x.tipo === 'gasto').map((x) => x.etiqueta)).toEqual(['RECURSOS HUMANOS']);
-      const resto = pasos.slice(iBruta).filter((x) => x.tipo === 'gasto').map((x) => x.monto);
+      // "Otros gastos" agrupa los chicos y va al final; el resto, de mayor a menor.
+      const resto = pasos.slice(iBruta).filter((x) => x.tipo === 'gasto' && !x.agrupa).map((x) => x.monto);
       expect(resto.every((v, i) => i === 0 || resto[i - 1] >= v)).toBe(true);
       expect(pasos.filter((x) => x.mayor).map((x) => x.etiqueta)).toEqual([r.categorias[0].categoria]);
+      const otros = pasos.find((x) => x.agrupa);
+      if (otros) {
+        expect(otros.monto).toBe(otros.agrupa!.reduce((s, c) => s + c.valor, 0));
+        expect(otros.agrupa!.every((c) => c.valor < r.gastos! * 0.02)).toBe(true);
+        expect(pasos.filter((x) => x.tipo === 'gasto').length + otros.agrupa!.length - 1).toBe(r.categorias.length);
+      }
     }
   });
 

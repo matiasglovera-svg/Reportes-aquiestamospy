@@ -60,6 +60,7 @@ export function Cascada({ pasos, resumen, anteriores, etiquetaAnterior }: { paso
           const filas: string[] = [`<b>${escapar(etiquetaPaso(x))}</b>`, `${x.tipo === 'gasto' ? 'Resta' : x.tipo === 'ingreso' ? 'Suma' : 'Monto'}: <b>${gs(x.monto)}</b>`];
           if (resumen.ingresos && x.tipo !== 'caja') filas.push(`${pct(x.monto / resumen.ingresos)} de los ingresos`);
           if (x.tipo === 'gasto' && resumen.gastos) filas.push(`${pct(x.monto / resumen.gastos)} del total de gastos`);
+          if (x.agrupa) filas.push(...x.agrupa.map((g) => `· ${escapar(nombreCategoria(g.categoria))}: ${gs(g.valor)}`));
           const ant = anteriores.find((a) => a.clave === x.clave);
           if (etiquetaAnterior && ant) {
             const dif = x.monto - ant.monto;

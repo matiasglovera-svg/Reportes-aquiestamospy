@@ -126,14 +126,19 @@ export interface PasoCascada {
   hasta: number;
   /** Es el gasto más alto del período. */
   mayor?: boolean;
+  /** Paso que agrupa gastos chicos: sus categorías, para el detalle. */
+  agrupa?: { categoria: string; valor: number }[];
 }
+
+/** Los gastos por debajo de esta fracción del gasto total se agrupan en "Otros gastos" en la cascada. */
+export const UMBRAL_OTROS = 0.02;
 
 /**
  * Caja inicial → + Ingresos → − RR. HH. → = Ganancia bruta → − resto de categorías (mayor a menor)
  * → = Ganancia real → = Caja al cierre. Los subtotales se dibujan desde el nivel de la caja inicial,
  * así su altura es exactamente la ganancia que representan.
  */
-export function cascada(r: ResumenFlujo): PasoCascada[] {
+export function cascada(r: ResumenFlujo, umbralOtros = UMBRAL_OTROS): PasoCascada[] {
   if (r.ingresos === null || r.gastos === null) return [];
   const base = r.cajaInicial ?? 0;
   const pasos: PasoCascada[] = [];
@@ -151,7 +156,15 @@ export function cascada(r: ResumenFlujo): PasoCascada[] {
   const rrhh = r.categorias.find((c) => c.categoria === CATEGORIA_RRHH);
   if (rrhh) mover(`gasto-${rrhh.categoria}`, rrhh.categoria, 'gasto', rrhh.valor, rrhh.categoria);
   if (r.gananciaBruta !== null) pasos.push({ clave: 'ganancia-bruta', etiqueta: 'Ganancia bruta', tipo: 'subtotal', monto: r.gananciaBruta, desde: base, hasta: base + r.gananciaBruta });
-  for (const c of r.categorias) if (c !== rrhh) mover(`gasto-${c.categoria}`, c.categoria, 'gasto', c.valor, c.categoria);
+  // Los gastos chicos van juntos al final, para que la cascada se lea de un vistazo.
+  const resto = r.categorias.filter((c) => c !== rrhh);
+  const chicos = r.gastos ? resto.filter((c) => c.categoria !== mayor && c.valor < r.gastos! * umbralOtros) : [];
+  for (const c of resto) if (!chicos.includes(c)) mover(`gasto-${c.categoria}`, c.categoria, 'gasto', c.valor, c.categoria);
+  if (chicos.length === 1) mover(`gasto-${chicos[0].categoria}`, chicos[0].categoria, 'gasto', chicos[0].valor, chicos[0].categoria);
+  else if (chicos.length > 1) {
+    mover('gasto-otros', `Otros gastos (${chicos.length})`, 'gasto', chicos.reduce((a, c) => a + c.valor, 0));
+    pasos[pasos.length - 1].agrupa = chicos.map((c) => ({ categoria: c.categoria, valor: c.valor }));
+  }
   if (r.gananciaReal !== null) pasos.push({ clave: 'ganancia-real', etiqueta: 'Ganancia real', tipo: 'subtotal', monto: r.gananciaReal, desde: base, hasta: base + r.gananciaReal });
   if (r.cajaCierre !== null) pasos.push({ clave: 'caja-cierre', etiqueta: 'Caja al cierre', tipo: 'caja', monto: r.cajaCierre, desde: 0, hasta: r.cajaCierre });
   return pasos;

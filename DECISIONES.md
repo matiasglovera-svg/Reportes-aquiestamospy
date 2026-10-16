@@ -80,3 +80,11 @@ Supuestos y criterios tomados sin consultar (sección 16.2). Si alguno no va, se
 53. **Caché separada:** en la vista previa (`VERCEL_ENV=preview`) el dataset, el lock de refresco, el límite de intentos de login y la caché del token de Microsoft se guardan con prefijo `preview:`.
 54. **Token de Microsoft:** la vista previa arranca desde el token de producción (solo lectura) y guarda su renovación en su propia clave; nunca reescribe el de producción.
 55. **Solo lectura:** en la vista previa no se puede conectar ni desconectar OneDrive ni asignar o quitar archivos (botones deshabilitados y rutas que responden 403). Usuarios y alias vienen de variables de entorno y del código, así que tampoco se pueden cambiar desde ahí.
+
+## Rediseño del flujo de caja (pedido de Matías, 16/10/2026)
+
+56. **Jerarquía:** arriba, una "ecuación de caja" (Caja inicial + Ingresos − Gastos = Caja al cierre) con la caja al cierre destacada; debajo, Ganancia bruta y Ganancia real con el margen como número grande y barra. La lectura automática resalta los números en negrita.
+57. **Cascada:** los gastos menores al 2 % del gasto total se agrupan en un paso "Otros gastos (n)", al final; el tooltip lista qué agrupa. La lista completa sigue en "¿Dónde se fue la plata?" y en la matriz.
+58. **Distribución:** columnas alineadas (monto, % del gasto, % de ingresos) y fila de total al pie.
+59. **Matriz:** sin sombreado por celda; totales y ganancias con fondo propio, márgenes como dato secundario, secciones con encabezado de color, mayor gasto del mes con un punto amarillo. La columna Total va al final y queda fija a la derecha en pantallas medianas y grandes (en el teléfono se desplaza con el resto).
+60. **Menú CSV:** un panel con varias descargas usa un solo menú `⋯`.
