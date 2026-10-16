@@ -24,9 +24,16 @@ Reglas principales:
 - Un dato que falta se muestra como `Sin dato`, nunca como 0.
 - Cada indicador tiene un ícono ⓘ con la fórmula, la fuente y la hora de la última lectura.
 
+## Módulos
+
+- **Resumen:** el mes en curso en vivo y, al final, el Análisis (ticket, márgenes, proyección, comparaciones, rankings y punto de equilibrio).
+- **Financiero** (desplegable): Resumen financiero y Flujo de caja.
+- **Operativo:** servicios, ocupación, salarios y horas.
+- **Admin** (solo Matías): Conexión y Salud de datos.
+
 ## Flujo de caja detallado
 
-**Financiero › Flujo de caja detallado** (en el teléfono, con las pestañas arriba de Financiero). Muestra, para el acumulado de meses cerrados o para un mes:
+**Financiero › Flujo de caja** (en el menú lateral, Financiero se despliega; en el teléfono, con las pestañas arriba de Financiero). Muestra, para el acumulado de meses cerrados o para un mes:
 
 - Caja inicial, ingresos, gastos, ganancia bruta y real (con sus márgenes) y caja al cierre, comparados con el período anterior.
 - Una cascada de la caja inicial a la caja al cierre, gasto por gasto.

@@ -88,3 +88,8 @@ Supuestos y criterios tomados sin consultar (sección 16.2). Si alguno no va, se
 58. **Distribución:** columnas alineadas (monto, % del gasto, % de ingresos) y fila de total al pie.
 59. **Matriz:** sin sombreado por celda; totales y ganancias con fondo propio, márgenes como dato secundario, secciones con encabezado de color, mayor gasto del mes con un punto amarillo. La columna Total va al final y queda fija a la derecha en pantallas medianas y grandes (en el teléfono se desplaza con el resto).
 60. **Menú CSV:** un panel con varias descargas usa un solo menú `⋯`.
+
+## Navegación final (pedido de Matías, 16/10/2026)
+
+61. **Análisis dentro de Resumen:** todo el contenido de Análisis va al final de Resumen, bajo el título "Análisis". Ya no es un módulo aparte; el link viejo `/resumen/analisis` redirige a `/resumen#analisis`.
+62. **Financiero desplegable:** en el menú lateral, Financiero es un grupo que se abre y se cierra con un clic, con "Resumen financiero" y "Flujo de caja". Se abre solo cuando estás en una pantalla de Financiero. En el teléfono, la barra inferior queda con Resumen, Financiero y Operativo (más Admin), y el flujo de caja se abre con las pestañas de Financiero.

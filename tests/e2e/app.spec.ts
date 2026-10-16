@@ -5,7 +5,6 @@ const CLAVE = process.env.E2E_PASSWORD ?? 'desarrollo-local-2026';
 
 const MODULOS = [
   { ruta: '/resumen', titulo: /Resumen de/ },
-  { ruta: '/resumen/analisis', titulo: 'Análisis' },
   { ruta: '/financiero', titulo: 'Financiero' },
   { ruta: '/financiero/flujo', titulo: 'Flujo de caja detallado' },
   { ruta: '/operativo', titulo: 'Operativo' },
@@ -94,7 +93,7 @@ test('filtros, ⓘ, tema y exportaciones', async ({ page }) => {
   expect(zip.suggestedFilename()).toMatch(/^AquiEstamos_Reportes_.+\.zip$/);
 
   // Toggle A/B del margen.
-  await page.goto('/resumen/analisis');
+  await page.goto('/resumen');
   await expect(page.getByText(/^Modo A:/)).toBeVisible();
   await page.getByRole('radio', { name: 'B · Sin sueldo fijo' }).click();
   await expect(page.getByText(/^Modo B:/)).toBeVisible();
@@ -105,14 +104,15 @@ test('filtros, ⓘ, tema y exportaciones', async ({ page }) => {
   await expect(page.getByRole('columnheader', { name: 'Ene' })).toBeVisible();
 });
 
-test('el rol viewer no ve ni accede a Admin', async ({ page }) => {
+test('el rol viewer no ve ni accede a Admin', async ({ page }, info) => {
   test.skip(!!process.env.E2E_BASE_URL && !process.env.E2E_VIEWER, 'Definí E2E_VIEWER y E2E_VIEWER_PASSWORD para probarlo en producción.');
   await page.goto('/login');
   await page.getByLabel('Usuario').fill(process.env.E2E_VIEWER ?? 'ariel');
   await page.getByLabel('Contraseña', { exact: true }).fill(process.env.E2E_VIEWER_PASSWORD ?? CLAVE);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.waitForURL('**/resumen');
-  await expect(page.getByRole('link', { name: 'Financiero' }).first()).toBeVisible();
+  // En computadora Financiero es un grupo desplegable del menú lateral; en el teléfono, un botón de la barra inferior.
+  await expect(info.project.name === 'movil' ? page.getByRole('link', { name: 'Financiero' }) : page.locator('aside').getByRole('button', { name: 'Financiero' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Salud/ })).toHaveCount(0);
   await page.goto('/admin/datos');
   await expect(page).toHaveURL(/\/resumen$/);
@@ -162,4 +162,26 @@ test('flujo de caja detallado: período, líneas de detalle, matriz y CSV', asyn
   expect(texto.charCodeAt(0)).toBe(0xfeff);
   expect(texto).toContain('Concepto;Enero;');
   expect(texto).toContain('Caja inicial + Ganancia real = Caja al cierre;');
+});
+
+test('Análisis está al final de Resumen y Financiero es un submenú desplegable', async ({ page }, info) => {
+  await entrar(page);
+  await expect(page.getByRole('heading', { level: 2, name: 'Análisis' })).toBeVisible();
+  await expect(page.getByText(/^Modo A:/)).toBeVisible();
+  await page.goto('/resumen/analisis');
+  await expect(page).toHaveURL(/\/resumen#analisis$/);
+  await expect(page.getByRole('link', { name: 'Análisis' })).toHaveCount(0);
+
+  test.skip(info.project.name === 'movil', 'El menú lateral solo existe en pantallas grandes.');
+  const menu = page.locator('aside');
+  const grupo = menu.getByRole('button', { name: 'Financiero' });
+  await expect(grupo).toHaveAttribute('aria-expanded', 'false');
+  await expect(menu.getByRole('link', { name: 'Flujo de caja' })).toHaveCount(0);
+  await grupo.click();
+  await expect(grupo).toHaveAttribute('aria-expanded', 'true');
+  await menu.getByRole('link', { name: 'Flujo de caja' }).click();
+  await expect(page).toHaveURL(/\/financiero\/flujo$/);
+  await expect(menu.getByRole('link', { name: 'Resumen financiero' })).toBeVisible();
+  await grupo.click();
+  await expect(menu.getByRole('link', { name: 'Resumen financiero' })).toHaveCount(0);
 });

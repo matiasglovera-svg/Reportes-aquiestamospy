@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Activity, ArrowLeftRight, BarChart3, CheckCircle2, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LineChart, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
+import { Activity, ArrowLeftRight, BarChart3, CheckCircle2, ChevronDown, ChevronsLeft, ChevronsRight, Download, LayoutDashboard, LogOut, Moon, PlugZap, Sun, TriangleAlert, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -14,10 +14,13 @@ import { Boton, cn, Esqueleto, Selector, Vacio } from './ui';
 
 const NAV = [
   { href: '/resumen', texto: 'Resumen', icono: LayoutDashboard },
-  { href: '/resumen/analisis', texto: 'Análisis', icono: LineChart, hijo: true },
   { href: '/financiero', texto: 'Financiero', icono: Wallet },
-  { href: '/financiero/flujo', texto: 'Flujo de caja', icono: ArrowLeftRight, hijo: true },
   { href: '/operativo', texto: 'Operativo', icono: Activity },
+];
+/** Submenú desplegable de Financiero. */
+const SUB_FINANCIERO = [
+  { href: '/financiero', texto: 'Resumen financiero', icono: Wallet },
+  { href: '/financiero/flujo', texto: 'Flujo de caja', icono: ArrowLeftRight },
 ];
 const NAV_ADMIN = [
   { href: '/admin/conexion', texto: 'Conexión', icono: PlugZap },
@@ -95,7 +98,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
   // El flujo de caja tiene su propio selector de período.
   const sinSelectorMes = esAdminRuta || ruta === '/financiero/flujo';
   // En la barra inferior del teléfono el flujo de caja se abre desde Financiero (pestañas en la página).
-  const itemsMovil = items.filter((n) => n.href !== '/financiero/flujo');
+  const itemsMovil = items;
+  const enFinanciero = ruta.startsWith('/financiero');
+  const [financieroAbierto, setFinancieroAbierto] = useState(enFinanciero);
+  useEffect(() => {
+    if (enFinanciero) setFinancieroAbierto(true);
+  }, [enFinanciero]);
   const activoMovil = (href: string) => activo(href) || (href === '/financiero' && ruta.startsWith('/financiero'));
 
   const salir = async () => {
@@ -124,9 +132,35 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
-          {NAV.map((n) => (
-            <Enlace key={n.href} {...n} activo={activo(n.href)} plegado={plegado} />
-          ))}
+          {NAV.map((n) =>
+            n.href === '/financiero' && !plegado ? (
+              <div key={n.href}>
+                <button
+                  onClick={() => setFinancieroAbierto((v) => !v)}
+                  aria-expanded={financieroAbierto}
+                  aria-controls="submenu-financiero"
+                  className={cn('flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors', enFinanciero ? 'font-semibold text-text' : 'text-muted hover:bg-surface-2 hover:text-text')}
+                >
+                  <n.icono className={cn('h-[18px] w-[18px] shrink-0', enFinanciero && 'text-primary')} />
+                  <span className="flex-1 truncate text-left">{n.texto}</span>
+                  <ChevronDown className={cn('h-4 w-4 shrink-0 transition-transform duration-200', financieroAbierto && 'rotate-180')} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {financieroAbierto && (
+                    <motion.div id="submenu-financiero" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                      <div className="mt-1 flex flex-col gap-1">
+                        {SUB_FINANCIERO.map((s) => (
+                          <Enlace key={s.href} {...s} hijo activo={activo(s.href)} plegado={false} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Enlace key={n.href} {...n} activo={n.href === '/financiero' ? enFinanciero : activo(n.href)} plegado={plegado} />
+            ),
+          )}
           {d.esAdmin && (
             <>
               {!plegado ? <p className="mt-4 px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Admin</p> : <hr className="my-3 border-border" />}
