@@ -223,7 +223,8 @@ export type AvisoTipo =
   | 'nombre-nuevo'
   | 'sin-clasificar'
   | 'estructura'
-  | 'caja-control';
+  | 'caja-control'
+  | 'sueldo-fijo-k';
 
 export interface Aviso {
   tipo: AvisoTipo;
@@ -260,6 +261,8 @@ export interface Dataset {
   flujo: FlujoCaja;
   salud: Aviso[];
   pestanas: { detectadas: string[]; ignoradas: string[] };
+  /** Operarias de sueldo fijo vigentes según config/staff.ts (desde qué mes y monto de respaldo). */
+  sueldosFijos: { operaria: string; fijoDesde: string; respaldo: number | null }[];
   /** Líneas con valor del detalle de INGRESOS y GASTOS (para ver en qué y por qué). */
   detalle: { ingresos: LineaDetalle[]; gastos: LineaDetalle[] };
 }

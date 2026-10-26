@@ -83,6 +83,28 @@ export function controlesCruzados(
     });
   }
 
+  // Montos en K en filas de servicio de operarias de sueldo fijo: no se suman a su sueldo (vale el panel).
+  for (const mc of meses) {
+    const porOperaria = new Map<string, { total: number; filas: number[] }>();
+    for (const s of mc.servicios) {
+      if (!s.operaria || !s.pago || !esSueldoFijo(s.operaria, mc.mes)) continue;
+      const x = porOperaria.get(s.operaria) ?? { total: 0, filas: [] };
+      x.total += s.pago;
+      x.filas.push(s.fila);
+      porOperaria.set(s.operaria, x);
+    }
+    for (const [operaria, x] of porOperaria) {
+      avisos.push({
+        tipo: 'sueldo-fijo-k',
+        nivel: 'info',
+        pestana: mc.pestana,
+        mes: mc.mes,
+        fila: x.filas[0],
+        mensaje: `${nombreMes(mc.mes)}: ${operaria} (sueldo fijo) tiene ${gs(x.total)} en TOTAL (K) en ${x.filas.length} filas de servicio (filas ${x.filas.join(', ')}). No se suman: su sueldo del mes es el Total del panel COMISION.`,
+      });
+    }
+  }
+
   // Control RR. HH.: Σ K de operarias por servicio + sueldos fijos del panel ≈ RECURSOS HUMANOS de GASTOS.
   for (const mc of meses) {
     const m = fin.meses[mc.mes - 1];

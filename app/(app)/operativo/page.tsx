@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { base, Grafico, linea, usePaleta } from '@/components/chart';
 import { useDatos } from '@/components/datos';
+import { PestanasOperativo } from '@/components/financiero-tabs';
 import { MapaCalor } from '@/components/heatmap';
 import { Kpi, Variacion } from '@/components/kpi';
 import { Tabla } from '@/components/tabla';
@@ -43,6 +44,7 @@ export default function Operativo() {
 
   return (
     <>
+      <PestanasOperativo />
       <TituloSeccion nota={`${mesLargo(mes)}${op?.enCurso ? ' · mes en curso' : ''}`}>Operativo</TituloSeccion>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">

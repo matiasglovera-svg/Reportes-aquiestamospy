@@ -48,3 +48,10 @@ Estado al 13/10/2026. Todo lo que no depende de cuentas externas está hecho y p
 - Tests: 53 unitarios en verde; Playwright: 12 pruebas en verde (incluye la vista nueva en ambos temas, 390 y 1440 px). Hubo un fallo intermitente en la primera carga del servidor de desarrollo que no se repitió.
 - OK de Matías el 16/10/2026, con dos ajustes: Análisis al final de Resumen y Financiero como submenú desplegable.
 - Merge a main y publicado en producción el 16/10/2026; rama borrada. Verificado en producción: login, protección de rutas y API. La revisión visual con datos la hace Matías.
+
+## Sección 18 — Rendimiento por operaria (en rama `feature/rendimiento-operaria`)
+- Motor: `lib/engine/metrics-rendimiento.ts` (unidades, ocupación, salario con reglas de sueldo fijo, ingreso, diferencia, período anterior); aviso nuevo de montos K en filas de sueldo fijo.
+- Pantalla `/operativo/rendimiento`: gráfico de dinero generado, 3 tarjetas con variación, tabla ordenable con ⓘ por columna y fila TOTAL, tarjetas en el teléfono, CSV con filtros.
+- Operativo como submenú desplegable, igual que Financiero.
+- Tests: 64 unitarios en verde; Playwright: 15 en verde.
+- **Pendiente:** OK de Matías sobre la vista previa → merge a main → verificación → borrar la rama.
