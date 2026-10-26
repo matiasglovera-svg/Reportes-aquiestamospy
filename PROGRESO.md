@@ -54,4 +54,4 @@ Estado al 13/10/2026. Todo lo que no depende de cuentas externas está hecho y p
 - Pantalla `/operativo/rendimiento`: gráfico de dinero generado, 3 tarjetas con variación, tabla ordenable con ⓘ por columna y fila TOTAL, tarjetas en el teléfono, CSV con filtros.
 - Operativo como submenú desplegable, igual que Financiero.
 - Tests: 64 unitarios en verde; Playwright: 15 en verde.
-- **Pendiente:** OK de Matías sobre la vista previa → merge a main → verificación → borrar la rama.
+- OK de Matías el 26/10/2026. Merge a main y publicado en producción; rama borrada. Verificado en producción: login, protección de rutas y API. La revisión visual con datos la hace Matías.
