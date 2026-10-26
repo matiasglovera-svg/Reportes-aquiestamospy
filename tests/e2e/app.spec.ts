@@ -8,6 +8,7 @@ const MODULOS = [
   { ruta: '/financiero', titulo: 'Financiero' },
   { ruta: '/financiero/flujo', titulo: 'Flujo de caja detallado' },
   { ruta: '/operativo', titulo: 'Operativo' },
+  { ruta: '/operativo/rendimiento', titulo: 'Rendimiento por operaria' },
   { ruta: '/admin/conexion', titulo: 'Conexión con OneDrive' },
   { ruta: '/admin/datos', titulo: 'Salud de datos' },
 ];
@@ -184,4 +185,49 @@ test('Análisis está al final de Resumen y Financiero es un submenú desplegabl
   await expect(menu.getByRole('link', { name: 'Resumen financiero' })).toBeVisible();
   await grupo.click();
   await expect(menu.getByRole('link', { name: 'Resumen financiero' })).toHaveCount(0);
+});
+
+test('rendimiento por operaria: vistas, interruptores, orden, sueldo fijo y CSV', async ({ page }, info) => {
+  await entrar(page);
+  await page.goto('/operativo/rendimiento');
+  await expect(page.getByRole('heading', { level: 2, name: 'Rendimiento por operaria' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /Dinero generado por operaria/ })).toBeVisible();
+  for (const t of ['Ingreso total generado', 'Total pagado al personal', 'Diferencia total']) await expect(page.getByText(t, { exact: true })).toBeVisible();
+
+  // Gloria y Judith figuran siempre, con su badge.
+  await expect(page.getByText('Sueldo fijo').filter({ visible: true }).first()).toBeVisible();
+
+  // Mes en curso: sueldo fijo estimado. Semana: promedio semanal.
+  await expect(page.getByText('Estimado').filter({ visible: true }).first()).toBeVisible();
+  await page.getByRole('radio', { name: 'Semana 2' }).click();
+  await expect(page.getByText('Promedio semanal (sueldo ÷ 4)').filter({ visible: true }).first()).toBeVisible();
+  await page.getByRole('radio', { name: 'Mes', exact: true }).click();
+
+  // Interruptores apagados por defecto.
+  const agendados = page.getByRole('switch', { name: 'Incluir agendados' });
+  await expect(agendados).toHaveAttribute('aria-checked', 'false');
+  await agendados.click();
+  await expect(agendados).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('switch', { name: 'Mostrar sin actividad' })).toHaveAttribute('aria-checked', 'false');
+
+  // Mes cerrado: el sueldo fijo sale del panel (sin "Estimado").
+  await page.getByLabel('Mes', { exact: true }).selectOption('8');
+  await expect(page.getByText('Estimado')).toHaveCount(0);
+
+  if (info.project.name !== 'movil') {
+    // Orden por defecto: Diferencia de mayor a menor; al tocar el encabezado se invierte.
+    await page.getByRole('button', { name: 'Ordenar por Diferencia' }).click();
+    await expect(page.getByRole('button', { name: 'Ordenar por Diferencia' }).locator('svg')).toBeVisible();
+    await expect(page.getByRole('rowheader', { name: 'TOTAL' })).toBeVisible();
+  } else {
+    await expect(page.getByText('TOTAL', { exact: true }).filter({ visible: true })).toBeVisible();
+  }
+
+  // CSV con los filtros aplicados.
+  await page.getByRole('button', { name: 'Opciones de Rendimiento por operaria' }).first().click();
+  const [csv] = await Promise.all([page.waitForEvent('download'), page.getByRole('menuitem', { name: 'Descargar CSV' }).click()]);
+  expect(csv.suggestedFilename()).toMatch(/^AquiEstamos_Rendimiento-por-operaria_Agosto-2026-con-agendados_\d{8}-\d{4}\.csv$/);
+  const texto = (await (await import('node:fs/promises')).readFile(await csv.path())).toString('utf8');
+  expect(texto).toContain('Operaria;Modalidad;Servicios alcanzables;');
+  expect(texto).toMatch(/\r\nTOTAL;/);
 });

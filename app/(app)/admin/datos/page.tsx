@@ -21,6 +21,7 @@ const GRUPOS: { tipos: AvisoTipo[]; titulo: string; ayuda: string }[] = [
   { tipos: ['sin-precio'], titulo: 'Servicios sin precio', ayuda: 'Cuentan en cantidades; el precio queda "Sin dato".' },
   { tipos: ['sin-operaria'], titulo: 'Servicios sin operaria', ayuda: 'Se agrupan como "Sin asignar".' },
   { tipos: ['sin-horas', 'horas-inferidas'], titulo: 'Horas faltantes o inferidas', ayuda: 'Cuando la columna de horas no trae un número, se calculan desde el horario.' },
+  { tipos: ['sueldo-fijo-k'], titulo: 'Montos K en filas de sueldo fijo', ayuda: 'Pagos cargados en la columna TOTAL (K) de servicios de Gloria o Judith: no se suman a su sueldo, que sale del panel COMISION.' },
   { tipos: ['pago-sueldo'], titulo: 'Filas de pago de sueldo', ayuda: 'Filas de la tabla de servicios que son un pago de sueldo fijo: no se cuentan como servicio.' },
   { tipos: ['nombre-unificado', 'nombre-nuevo'], titulo: 'Nombres de operarias', ayuda: 'Nombres unificados automáticamente (una letra de diferencia) y nombres nuevos que no están en la lista.' },
   { tipos: ['sin-clasificar'], titulo: 'Sin clasificar', ayuda: 'Servicios sin tipo de precio o de cliente en la fila ni en BBDD CLIENTES.' },

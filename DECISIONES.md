@@ -93,3 +93,15 @@ Supuestos y criterios tomados sin consultar (sección 16.2). Si alguno no va, se
 
 61. **Análisis dentro de Resumen:** todo el contenido de Análisis va al final de Resumen, bajo el título "Análisis". Ya no es un módulo aparte; el link viejo `/resumen/analisis` redirige a `/resumen#analisis`.
 62. **Financiero desplegable:** en el menú lateral, Financiero es un grupo que se abre y se cierra con un clic, con "Resumen financiero" y "Flujo de caja". Se abre solo cuando estás en una pantalla de Financiero. En el teléfono, la barra inferior queda con Resumen, Financiero y Operativo (más Admin), y el flujo de caja se abre con las pestañas de Financiero.
+
+## Rendimiento por operaria (sección 18)
+
+63. **Dónde vive:** Operativo › Rendimiento por operaria (`/operativo/rendimiento`). Operativo pasa a ser un submenú desplegable, igual que Financiero ("Resumen operativo" y "Rendimiento por operaria"), con pestañas arriba de ambas pantallas para el teléfono.
+64. **Selector de mes propio** (por defecto el mes en curso); en esta pantalla se oculta el selector de mes de la barra superior.
+65. **Sueldo fijo:** mes cerrado = Total del panel COMISION del mes. Mes en curso = Total del último mes cerrado que lo tenga, con la etiqueta "Estimado". Si el panel no trae el dato, se usa el respaldo de `config/staff.ts` (Gloria 3.344.000, Judith 3.044.000) con la etiqueta "Respaldo config". Vista semanal = sueldo mensual ÷ 4.
+66. **Quién cuenta como sueldo fijo:** según `fijoDesde` de `config/staff.ts` (Judith desde mayo). En meses anteriores se trata como operaria por servicio.
+67. **Montos K en filas de sueldo fijo:** no se suman al salario; se muestran en una nota de la celda y se registran en Salud de datos ("Montos K en filas de sueldo fijo").
+68. **Servicios sin operaria:** no entran en ninguna fila; se informa cuántos hay debajo de la tabla.
+69. **Período anterior** para las variaciones: el mes previo, o el bloque anterior (la Semana 1 se compara con la Semana 4 del mes previo). En el mes en curso no se muestran variaciones.
+70. **"Mostrar sin actividad":** suma todas las operarias que aparecen en algún mes del año, con valores en 0.
+71. **Tabla:** con pocas operarias (hasta 14) no tiene desplazamiento interno, para que no quede ninguna fila escondida; con más, se limita al 75 % de la pantalla y mantiene fijos el encabezado, la primera columna y la fila TOTAL.

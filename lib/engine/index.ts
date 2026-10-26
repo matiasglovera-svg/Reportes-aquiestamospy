@@ -22,7 +22,7 @@ export interface Entrada {
   aliasOperarias?: Record<string, string[]>;
   operariasConocidas?: string[];
   aliasClientes?: Record<string, string[]>;
-  sueldoFijo?: Record<string, { fijoDesde: string }>;
+  sueldoFijo?: Record<string, { fijoDesde: string; respaldo?: number }>;
 }
 
 /** Motor puro: libro ya leído + fecha de hoy → dataset. Sin I/O ni reloj. */
@@ -108,6 +108,7 @@ export function construirDataset(e: Entrada): Dataset {
       detectadas: Object.keys(libro.hojas),
       ignoradas: libro.nombres.filter((n) => !esPestanaNecesaria(n)),
     },
+    sueldosFijos: Object.entries(sueldoFijo).map(([operaria, v]) => ({ operaria, fijoDesde: v.fijoDesde, respaldo: v.respaldo ?? null })),
     detalle: { ingresos: lineas(ingresos.detalle, (c) => normTexto(c) || 'SIN CONCEPTO'), gastos: lineas(gastos.detalle, categoriaGasto) },
   };
 }

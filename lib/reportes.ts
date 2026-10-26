@@ -15,6 +15,7 @@ import {
   type ModoMargen,
 } from './engine/metrics-analisis';
 import { matrizFlujo, resumenFlujo, type ResumenFlujo } from './engine/metrics-flujo';
+import type { Rendimiento } from './engine/metrics-rendimiento';
 import { calcularResumen } from './engine/metrics-resumen';
 import type { Dataset, OpMes, TipoCliente } from './engine/types';
 import { mesCorto, mesLargo } from './format';
@@ -572,5 +573,58 @@ export function rLineasGastos(r: ResumenFlujo, categoria?: string): Reporte {
       { titulo: 'Celda en GASTOS', tipo: 'texto' },
     ],
     filas: cats.flatMap((c) => c.lineas.map((l) => [mesLargo(l.mes), nombreCategoria(c.categoria), l.concepto, l.valor, l.obs ?? 'Sin detalle cargado', l.celda])),
+  };
+}
+
+// ───────────────────────── Rendimiento por operaria ─────────────────────────
+
+const ORIGEN_SALARIO: Record<string, string> = {
+  servicios: 'Σ K de sus servicios',
+  panel: 'Panel COMISION del mes',
+  estimado: 'Estimado (último mes cerrado)',
+  respaldo: 'Respaldo de config/staff.ts',
+  'sin-dato': 'Sin dato',
+};
+
+/** Tabla de rendimiento con los filtros aplicados (mes o semana, agendados, sin actividad). */
+export function rRendimiento(d: Dataset, r: Rendimiento): Reporte {
+  const v = r.vista;
+  const periodo = `${v.semana ? `Semana-${v.semana}-` : ''}${mesLargo(v.mes)}-${d.anio}${v.conAgendados ? '-con-agendados' : ''}`;
+  const semanal = v.semana !== null;
+  return {
+    id: 'rendimiento-operaria',
+    titulo: 'Rendimiento por operaria',
+    periodo,
+    columnas: [
+      { titulo: 'Operaria', tipo: 'texto' },
+      { titulo: 'Modalidad', tipo: 'texto' },
+      { titulo: 'Servicios alcanzables', tipo: 'num' },
+      { titulo: 'Servicios realizados (unidades ponderadas)', tipo: 'num' },
+      { titulo: 'Servicios sin ponderar', tipo: 'num' },
+      { titulo: 'Horas', tipo: 'num' },
+      { titulo: 'Ocupación', tipo: 'pct' },
+      { titulo: 'Salario', tipo: 'gs' },
+      { titulo: 'Origen del salario', tipo: 'texto' },
+      { titulo: 'Ingreso', tipo: 'gs' },
+      { titulo: 'Diferencia', tipo: 'gs' },
+      { titulo: 'Servicios sin precio', tipo: 'num' },
+    ],
+    filas: [
+      ...r.filas.map((f): Valor[] => [
+        f.operaria,
+        f.fija ? 'Sueldo fijo' : 'Por servicio',
+        f.alcanzables,
+        f.unidades,
+        f.servicios,
+        f.horas,
+        f.ocupacion,
+        f.salario,
+        ORIGEN_SALARIO[f.origenSalario] + (f.fija && semanal ? ' ÷ 4 (promedio semanal)' : ''),
+        f.ingreso,
+        f.diferencia,
+        f.sinPrecio.length,
+      ]),
+      ['TOTAL', '', r.total.alcanzables, r.total.unidades, r.total.servicios, r.total.horas, r.total.ocupacion, r.total.salario, '', r.total.ingreso, r.total.diferencia, r.filas.reduce((a, f) => a + f.sinPrecio.length, 0)],
+    ],
   };
 }

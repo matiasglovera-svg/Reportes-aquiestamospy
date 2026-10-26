@@ -28,7 +28,7 @@ Reglas principales:
 
 - **Resumen:** el mes en curso en vivo y, al final, el Análisis (ticket, márgenes, proyección, comparaciones, rankings y punto de equilibrio).
 - **Financiero** (desplegable): Resumen financiero y Flujo de caja.
-- **Operativo:** servicios, ocupación, salarios y horas.
+- **Operativo** (desplegable): Resumen operativo (servicios, ocupación, salarios y horas) y Rendimiento por operaria (lo que generó cada operaria contra lo que cobró, por mes o por semana).
 - **Admin** (solo Matías): Conexión y Salud de datos.
 
 ## Flujo de caja detallado
